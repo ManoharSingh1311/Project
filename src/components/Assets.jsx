@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { Boxes, ClipboardList } from "lucide-react";
+import {
+  Boxes,
+  ClipboardList,
+  PlusCircle,
+  RefreshCcw
+} from "lucide-react";
+
 import AssetRegistration from "./module1/AssetRegistration";
 import AssetList from "./module1/AssetList";
+import AssetLifecycle from "./module1/AssetLifecycle";
+
 import AssetKPIs from "./module1/AssetKPIs";
 import { getAssets, saveAssets } from "./module1/assetStorage";
 
@@ -13,6 +21,7 @@ export default function Assets() {
     setAssets(getAssets());
   }, []);
 
+  /* ---------------- CRUD OPERATIONS ---------------- */
   const addAsset = (asset) => {
     const updated = [...assets, asset];
     setAssets(updated);
@@ -52,7 +61,7 @@ export default function Assets() {
 
           <p className="mt-3 text-slate-300 max-w-3xl leading-relaxed">
             Centralized management of oil & gas assets — from registration and
-            operational tracking to lifecycle status updates and compliance readiness.
+            operational tracking to lifecycle status transitions and compliance readiness.
           </p>
         </div>
       </div>
@@ -60,35 +69,54 @@ export default function Assets() {
       {/* ================= KPI SECTION ================= */}
       <AssetKPIs assets={assets} />
 
-      {/* ================= CONTENT ================= */}
+      {/* ================= MODULE SWITCH ================= */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
 
-        {/* -------- Tabs -------- */}
-        <div className="flex border-b bg-gray-50 rounded-t-xl overflow-hidden">
-          <TabButton
-            label="Asset List"
-            icon={ClipboardList}
-            active={tab === "list"}
-            onClick={() => setTab("list")}
-          />
-          <TabButton
-            label="Asset Registration"
-            icon={Boxes}
-            active={tab === "register"}
-            onClick={() => setTab("register")}
-          />
+        {/* Switch Bar */}
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50 rounded-t-xl">
+          <h2 className="font-semibold text-gray-800">Module View</h2>
+
+          <div className="flex bg-gray-200 rounded-lg p-1">
+            <SwitchButton
+              icon={ClipboardList}
+              label="Assets"
+              active={tab === "list"}
+              onClick={() => setTab("list")}
+            />
+            <SwitchButton
+              icon={PlusCircle}
+              label="Register"
+              active={tab === "register"}
+              onClick={() => setTab("register")}
+            />
+            <SwitchButton
+              icon={RefreshCcw}
+              label="Lifecycle"
+              active={tab === "lifecycle"}
+              onClick={() => setTab("lifecycle")}
+            />
+          </div>
         </div>
 
-        {/* -------- Tab Content -------- */}
+        {/* Content */}
         <div className="p-6">
-          {tab === "register" ? (
-            <AssetRegistration assets={assets} onAdd={addAsset} />
-          ) : (
+          {tab === "list" && (
             <AssetList
               assets={assets}
               onDelete={deleteAsset}
               onUpdate={updateAsset}
             />
+          )}
+
+          {tab === "register" && (
+            <AssetRegistration
+              assets={assets}
+              onAdd={addAsset}
+            />
+          )}
+
+          {tab === "lifecycle" && (
+            <AssetLifecycle assets={assets} />
           )}
         </div>
       </div>
@@ -101,16 +129,16 @@ export default function Assets() {
   );
 }
 
-/* ================= TAB BUTTON ================= */
-function TabButton({ label, icon: Icon, active, onClick }) {
+/* ================= SWITCH BUTTON ================= */
+function SwitchButton({ icon: Icon, label, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition
+      className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition
         ${
           active
-            ? "bg-white text-slate-900 border-b-2 border-slate-900"
-            : "text-gray-600 hover:text-slate-900 hover:bg-gray-100"
+            ? "bg-white text-slate-900 shadow"
+            : "text-gray-600 hover:text-gray-900"
         }`}
     >
       <Icon className="w-4 h-4" />
