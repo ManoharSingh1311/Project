@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Boxes,
   ClipboardList,
@@ -9,19 +9,22 @@ import {
 import AssetRegistration from "./module1/AssetRegistration";
 import AssetList from "./module1/AssetList";
 import AssetLifecycle from "./module1/AssetLifecycle";
-
 import AssetKPIs from "./module1/AssetKPIs";
+
 import { getAssets, saveAssets } from "./module1/assetStorage";
 
 export default function Assets() {
   const [tab, setTab] = useState("list");
+  const [fromHeader, setFromHeader] = useState(false);
   const [assets, setAssets] = useState([]);
+
+  const moduleRef = useRef(null);
 
   useEffect(() => {
     setAssets(getAssets());
   }, []);
 
-  /* ---------------- CRUD OPERATIONS ---------------- */
+  /* ---------------- CRUD ---------------- */
   const addAsset = (asset) => {
     const updated = [...assets, asset];
     setAssets(updated);
@@ -43,6 +46,17 @@ export default function Assets() {
     saveAssets(updated);
   };
 
+  /* -------- SMART SCROLL (ONLY HEADER CTA) -------- */
+  useEffect(() => {
+    if (tab === "register" && fromHeader) {
+      moduleRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+      setFromHeader(false);
+    }
+  }, [tab, fromHeader]);
+
   return (
     <div className="space-y-8">
 
@@ -59,20 +73,42 @@ export default function Assets() {
             </h1>
           </div>
 
-          <p className="mt-3 text-slate-300 max-w-3xl leading-relaxed">
-            Centralized management of oil & gas assets — from registration and
-            operational tracking to lifecycle status transitions and compliance readiness.
-          </p>
+          <div className="mt-4 flex items-start justify-between gap-6">
+            <p className="text-slate-300 max-w-3xl leading-relaxed">
+              Centralized management of oil & gas assets — from registration and
+              operational tracking to lifecycle status transitions and compliance readiness.
+            </p>
+
+            {/* HEADER CTA */}
+            <button
+              onClick={() => {
+                setFromHeader(true);
+                setTab("register");
+              }}
+              className="flex items-center gap-2 px-4 py-2
+                bg-gradient-to-r from-emerald-500 to-emerald-600
+                hover:from-emerald-600 hover:to-emerald-700
+                text-white text-sm font-semibold
+                rounded-lg shadow-lg transition-all
+                border border-emerald-400/30 shrink-0"
+            >
+              <PlusCircle className="w-5 h-5" />
+              Register Asset
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ================= KPI SECTION ================= */}
+      {/* ================= KPI ================= */}
       <AssetKPIs assets={assets} />
 
-      {/* ================= MODULE SWITCH ================= */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+      {/* ================= MODULE ================= */}
+      <div
+        ref={moduleRef}
+        className="bg-white rounded-xl border border-gray-200 shadow-sm"
+      >
 
-        {/* Switch Bar */}
+        {/* SWITCH BAR */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50 rounded-t-xl">
           <h2 className="font-semibold text-gray-800">Module View</h2>
 
@@ -81,24 +117,33 @@ export default function Assets() {
               icon={ClipboardList}
               label="Assets"
               active={tab === "list"}
-              onClick={() => setTab("list")}
+              onClick={() => {
+                setFromHeader(false);
+                setTab("list");
+              }}
             />
             <SwitchButton
               icon={PlusCircle}
               label="Register"
               active={tab === "register"}
-              onClick={() => setTab("register")}
+              onClick={() => {
+                setFromHeader(false);
+                setTab("register");
+              }}
             />
             <SwitchButton
               icon={RefreshCcw}
               label="Lifecycle"
               active={tab === "lifecycle"}
-              onClick={() => setTab("lifecycle")}
+              onClick={() => {
+                setFromHeader(false);
+                setTab("lifecycle");
+              }}
             />
           </div>
         </div>
 
-        {/* Content */}
+        {/* CONTENT */}
         <div className="p-6">
           {tab === "list" && (
             <AssetList

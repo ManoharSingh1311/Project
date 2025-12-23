@@ -1,11 +1,6 @@
 // components/module1/AssetList.jsx
 import { useState, useMemo } from "react";
-import {
-  Search,
-  Edit,
-  Trash2,
-  X
-} from "lucide-react";
+import { Search, Edit, Trash2, X } from "lucide-react";
 import { getStatusColor, getTypeColor } from "./AssetUtils";
 
 export default function AssetList({ assets, onDelete, onUpdate }) {
@@ -38,8 +33,10 @@ export default function AssetList({ assets, onDelete, onUpdate }) {
   return (
     <>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        {/* Toolbar */}
+
+        {/* ================= TOOLBAR ================= */}
         <div className="p-5 border-b flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+
           {/* Search */}
           <div className="relative w-full lg:w-1/3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -52,8 +49,12 @@ export default function AssetList({ assets, onDelete, onUpdate }) {
             />
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-3">
+          {/* Filters + Meta */}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm text-gray-500">
+              Showing <span className="font-medium">{filteredAssets.length}</span> assets
+            </span>
+
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
@@ -76,10 +77,21 @@ export default function AssetList({ assets, onDelete, onUpdate }) {
               <option value="Under Inspection">Under Inspection</option>
               <option value="Decommissioned">Decommissioned</option>
             </select>
+
+            <button
+              onClick={() => {
+                setSearch("");
+                setStatus("");
+                setType("");
+              }}
+              className="text-sm text-slate-600 hover:underline"
+            >
+              Reset
+            </button>
           </div>
         </div>
 
-        {/* Table */}
+        {/* ================= TABLE ================= */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b sticky top-0 z-10">
@@ -97,8 +109,13 @@ export default function AssetList({ assets, onDelete, onUpdate }) {
             <tbody className="divide-y">
               {filteredAssets.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-gray-500">
-                    No assets match the selected filters
+                  <td colSpan="7" className="py-16 text-center">
+                    <p className="text-gray-500 text-sm">
+                      No assets found for current filters
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Try clearing filters or register a new asset
+                    </p>
                   </td>
                 </tr>
               )}
@@ -106,26 +123,49 @@ export default function AssetList({ assets, onDelete, onUpdate }) {
               {filteredAssets.map((a, i) => (
                 <tr
                   key={a.id}
-                  className={`hover:bg-gray-50 ${
+                  className={`group transition-all hover:bg-slate-50 ${
                     i % 2 === 0 ? "bg-white" : "bg-gray-50/40"
                   }`}
                 >
                   <td className="px-5 py-4 font-medium">{a.id}</td>
                   <td className="px-5 py-4">{a.name}</td>
+
                   <td className="px-5 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(a.type)}`}>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(
+                        a.type
+                      )}`}
+                    >
                       {a.type}
                     </span>
                   </td>
+
                   <td className="px-5 py-4 text-gray-600">{a.location}</td>
+
+                  {/* INLINE STATUS CHANGE */}
                   <td className="px-5 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(a.status)}`}>
-                      {a.status}
-                    </span>
+                    <select
+                      value={a.status}
+                      onChange={(e) =>
+                        onUpdate({ ...a, status: e.target.value })
+                      }
+                      className={`text-xs font-medium rounded-full px-2 py-1 cursor-pointer border-none focus:ring-2 focus:ring-slate-400 ${getStatusColor(
+                        a.status
+                      )}`}
+                    >
+                      <option>Operational</option>
+                      <option>Maintenance</option>
+                      <option>Under Inspection</option>
+                      <option>Decommissioned</option>
+                    </select>
                   </td>
-                  <td className="px-5 py-4 text-gray-600">{a.lastMaintenance || "-"}</td>
+
+                  <td className="px-5 py-4 text-gray-600">
+                    {a.lastMaintenance || "-"}
+                  </td>
+
                   <td className="px-5 py-4">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-2 opacity-60 group-hover:opacity-100 transition">
                       <button
                         title="Edit Asset"
                         onClick={() => setSelectedAsset({ ...a })}
@@ -150,10 +190,10 @@ export default function AssetList({ assets, onDelete, onUpdate }) {
         </div>
       </div>
 
-      {/* ---------------- EDIT DRAWER ---------------- */}
+      {/* ================= EDIT DRAWER ================= */}
       {selectedAsset && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-          <div className="bg-white w-full sm:w-[420px] h-full shadow-xl p-6">
+          <div className="bg-white w-full sm:w-[420px] h-full shadow-xl p-6 animate-slide-in">
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="text-lg font-semibold">Update Asset</h3>
               <button onClick={() => setSelectedAsset(null)}>
