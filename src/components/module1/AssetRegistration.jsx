@@ -1,6 +1,8 @@
 // module1/AssetRegistration.jsx
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { normalizeAsset } from "./assetFormat";
+
+
 
 const ID_PREFIX = {
   RIG: "RIG",
@@ -18,6 +20,33 @@ export default function AssetRegistration({ assets, onAdd }) {
   });
 
   const [errors, setErrors] = useState({});
+  const [locationQuery, setLocationQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [loadingLoc, setLoadingLoc] = useState(false);
+
+  useEffect(() => {
+  if (!locationQuery || locationQuery.length < 3) {
+    setSuggestions([]);
+    return;
+  }
+
+  const timer = setTimeout(async () => {
+    try {
+      setLoadingLoc(true);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${locationQuery}&addressdetails=1&limit=8`
+      );
+      const data = await res.json();
+      setSuggestions(data);
+    } catch (err) {
+      console.error("Location fetch failed", err);
+    } finally {
+      setLoadingLoc(false);
+    }
+  }, 300); // debounce
+
+  return () => clearTimeout(timer);
+}, [locationQuery]);
 
   /* ---------------- VALIDATION ---------------- */
   const validate = () => {
@@ -168,23 +197,52 @@ export default function AssetRegistration({ assets, onAdd }) {
         </div>
 
         {/* Location */}
-        <div>
+        {/* Location */}
+        <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Location <span className="text-red-500">*</span>
           </label>
+
           <input
             type="text"
-            placeholder="e.g., Gulf of Mexico"
-            value={form.location}
-            onChange={(e) =>
-              setForm({ ...form, location: e.target.value })
-            }
+            placeholder="Search city, place or country"
+            value={locationQuery}
+            onChange={(e) => {
+              setLocationQuery(e.target.value);
+              setForm({ ...form, location: e.target.value });
+            }}
             className={inputClass("location")}
           />
+
+          {/* DROPDOWN */}
+          {suggestions.length > 0 && (
+            <div className="absolute z-20 mt-1 w-full max-h-48 overflow-y-auto
+                            bg-white border border-gray-200 rounded-lg shadow-md">
+              {suggestions.map((loc) => (
+                <div
+                  key={loc.place_id}
+                  onClick={() => {
+                    setForm({ ...form, location: loc.display_name });
+                    setLocationQuery(loc.display_name);
+                    setSuggestions([]);
+                  }}
+                  className="px-3 py-2 text-sm cursor-pointer hover:bg-slate-100"
+                >
+                  {loc.display_name}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {loadingLoc && (
+            <p className="text-xs text-gray-400 mt-1">Searching locations…</p>
+          )}
+
           {errors.location && (
             <p className="text-xs text-red-500 mt-1">{errors.location}</p>
           )}
         </div>
+
 
         {/* Status */}
         <div>

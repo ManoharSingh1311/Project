@@ -74,10 +74,14 @@ export default function Assets() {
           </div>
 
           <div className="mt-4 flex items-start justify-between gap-6">
-            <p className="text-slate-300 max-w-3xl leading-relaxed">
-              Centralized management of oil & gas assets — from registration and
-              operational tracking to lifecycle status transitions and compliance readiness.
-            </p>
+           <p className="relative text-slate-300 max-w-xl text-sm pl-4
+              before:absolute before:left-0 before:top-1
+              before:h-4 before:w-[3px]
+              before:rounded-full
+              before:bg-gradient-to-b before:from-emerald-400 before:to-emerald-600">
+            End-to-end lifecycle management for oil & gas assets.
+          </p>
+
 
             {/* HEADER CTA */}
             <button
@@ -92,8 +96,8 @@ export default function Assets() {
                 rounded-lg shadow-lg transition-all
                 border border-emerald-400/30 shrink-0"
             >
-              <PlusCircle className="w-5 h-5" />
-              Register Asset
+               <PlusCircle className="w-5 h-5" />
+  {tab === "register" ? "View Assets" : "Register Asset"}
             </button>
           </div>
         </div>
@@ -110,7 +114,7 @@ export default function Assets() {
 
         {/* SWITCH BAR */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50 rounded-t-xl">
-          <h2 className="font-semibold text-gray-800">Module View</h2>
+          <h2 className="font-semibold text-gray-800">Asset Operations Hub</h2>
 
           <div className="flex bg-gray-200 rounded-lg p-1">
             <SwitchButton
